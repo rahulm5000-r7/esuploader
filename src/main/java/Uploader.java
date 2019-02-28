@@ -34,7 +34,7 @@ public class Uploader {
     public Uploader() {
         client = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost("<<your_host>>")));
+                        new HttpHost("search-policy-benchmark-testing-4zte53pc74mptymajtrs4tocw4.us-east-1.es.amazonaws.com")));
 
         BulkProcessor.Listener listener = new BulkProcessor.Listener() {
             @Override
@@ -68,17 +68,15 @@ public class Uploader {
         BulkProcessor.Builder builder = BulkProcessor.builder(bulkConsumer, listener);
         builder.setBulkActions(500);
         builder.setBulkSize(new ByteSizeValue(9L, ByteSizeUnit.MB));
-        builder.setConcurrentRequests(10);
+        builder.setConcurrentRequests(25);
         builder.setFlushInterval(TimeValue.timeValueSeconds(10L));
         builder.setBackoffPolicy(BackoffPolicy.constantBackoff(TimeValue.timeValueSeconds(1L), 3));
         processor = builder.build();
     }
 
-    public void start()
-        throws IOException, InterruptedException
+    public void start() throws IOException, InterruptedException
     {
         Long start = System.currentTimeMillis();
-        // start ORG_COUNT threads and each thread creates ASSET_COUNT index requests
         for(int x = 0; x < Settings.ORG_COUNT; x++) {
             Runnable worker = new OrgAssetUploader(x);
             executor.execute(worker);
@@ -104,14 +102,21 @@ public class Uploader {
         public void run() {
             for(int assetId = 0; assetId < Settings.ASSET_PER_ORG_COUNT; assetId++) {
                 Map<String, Object> jsonMap = new HashMap<>();
-                List<Map<String, Object>> policies = new LinkedList<>();
+                String assetIdentifier = "org_id_" + orgId + "_asset_" + assetId;
+                jsonMap.put("org_id", orgId);
+                jsonMap.put("asset_id", assetIdentifier);
+                jsonMap.put("platform", PLATFORMS.get(random.nextInt(PLATFORMS.size())));
+                jsonMap.put("rules_passed", random.nextInt(Settings.RULE_PER_POLICY_COUNT));
+                jsonMap.put("total_rules", random.nextInt(Settings.RULE_PER_POLICY_COUNT));
+                IndexRequest request = new IndexRequest("assets_test", "_doc").source(jsonMap);
+                processor.add(request);
 
                 for(int policyId = 0; policyId < Settings.POLICY_PER_ASSET_COUNT; policyId++) {
                     Map<String, Object> policy = new HashMap<>();
                     List<Map<String, Object>> results = new LinkedList<>();
-
                     policy.put("applicable", random.nextBoolean());
                     policy.put("name", "policy " + policyId);
+                    policy.put("asset_id", assetIdentifier);
 
                     for(int ruleId = 0; ruleId < Settings.RULE_PER_POLICY_COUNT; ruleId++) {
                         Map<String, Object> ruleResult = new HashMap<>();
@@ -122,17 +127,9 @@ public class Uploader {
                     }
 
                     policy.put("results", results);
-                    policies.add(policy);
+                    IndexRequest policyRequest = new IndexRequest("assets_policy_test", "_doc").source(policy);
+                    processor.add(policyRequest);
                 }
-                String assetIdentifier = "org_id_" + orgId + "_asset_" + assetId;
-                jsonMap.put("policies", policies);
-                jsonMap.put("org_id", orgId);
-                jsonMap.put("asset_id", assetIdentifier);
-                jsonMap.put("platform", PLATFORMS.get(random.nextInt(PLATFORMS.size())));
-                jsonMap.put("rules_passed", random.nextInt(Settings.RULE_PER_POLICY_COUNT));
-                jsonMap.put("total_rules", random.nextInt(Settings.RULE_PER_POLICY_COUNT));
-                IndexRequest request = new IndexRequest("assets", "_doc").source(jsonMap);
-                processor.add(request);
             }
         }
     }
