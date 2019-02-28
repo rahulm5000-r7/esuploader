@@ -56,6 +56,7 @@ public class Uploader {
     }
 
     public void start() throws IOException {
+        Long start = System.currentTimeMillis();
         // start ORG_COUNT threads and each thread creates ASSET_COUNT index requests
         for(int x = 0; x < Settings.ORG_COUNT; x++) {
             Runnable worker = new OrgAssetUploader(x);
@@ -65,6 +66,8 @@ public class Uploader {
         while (!executor.isTerminated()) {}
         System.out.println("\nFinished all threads");
         client.close();
+        Long end = System.currentTimeMillis();
+        System.out.println("Total runtime: " + (end - start) / 1000 + " seconds");
     }
 
     private class OrgAssetUploader implements Runnable {
