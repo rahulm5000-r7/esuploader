@@ -66,7 +66,7 @@ public class Uploader {
             (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
 
         BulkProcessor.Builder builder = BulkProcessor.builder(bulkConsumer, listener);
-        builder.setBulkActions(500);
+        builder.setBulkActions(1000);
         builder.setBulkSize(new ByteSizeValue(9L, ByteSizeUnit.MB));
         builder.setConcurrentRequests(25);
         builder.setFlushInterval(TimeValue.timeValueSeconds(10L));
@@ -108,7 +108,7 @@ public class Uploader {
                 jsonMap.put("platform", PLATFORMS.get(random.nextInt(PLATFORMS.size())));
                 jsonMap.put("rules_passed", random.nextInt(Settings.RULE_PER_POLICY_COUNT));
                 jsonMap.put("total_rules", random.nextInt(Settings.RULE_PER_POLICY_COUNT));
-                IndexRequest request = new IndexRequest("assets_test", "_doc").source(jsonMap);
+                IndexRequest request = new IndexRequest("assets_2", "_doc").source(jsonMap);
                 processor.add(request);
 
                 for(int policyId = 0; policyId < Settings.POLICY_PER_ASSET_COUNT; policyId++) {
@@ -127,7 +127,7 @@ public class Uploader {
                     }
 
                     policy.put("results", results);
-                    IndexRequest policyRequest = new IndexRequest("assets_policy_test", "_doc").source(policy);
+                    IndexRequest policyRequest = new IndexRequest("assets_policies_2", "_doc").source(policy);
                     processor.add(policyRequest);
                 }
             }
