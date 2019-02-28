@@ -68,7 +68,7 @@ public class Uploader {
         BulkProcessor.Builder builder = BulkProcessor.builder(bulkConsumer, listener);
         builder.setBulkActions(500);
         builder.setBulkSize(new ByteSizeValue(9L, ByteSizeUnit.MB));
-        builder.setConcurrentRequests(10);
+        builder.setConcurrentRequests(25);
         builder.setFlushInterval(TimeValue.timeValueSeconds(10L));
         builder.setBackoffPolicy(BackoffPolicy.constantBackoff(TimeValue.timeValueSeconds(1L), 3));
         processor = builder.build();
