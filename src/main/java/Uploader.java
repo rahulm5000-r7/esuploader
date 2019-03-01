@@ -34,7 +34,7 @@ public class Uploader {
     public Uploader() {
         client = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost("search-policy-benchmark-testing-4zte53pc74mptymajtrs4tocw4.us-east-1.es.amazonaws.com")));
+                        new HttpHost("<<>>")));
 
         BulkProcessor.Listener listener = new BulkProcessor.Listener() {
             @Override
@@ -66,9 +66,9 @@ public class Uploader {
             (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
 
         BulkProcessor.Builder builder = BulkProcessor.builder(bulkConsumer, listener);
-        builder.setBulkActions(1000);
-        builder.setBulkSize(new ByteSizeValue(9L, ByteSizeUnit.MB));
-        builder.setConcurrentRequests(25);
+        builder.setBulkActions(2000);
+        builder.setBulkSize(new ByteSizeValue(90L, ByteSizeUnit.MB));
+        builder.setConcurrentRequests(50);
         builder.setFlushInterval(TimeValue.timeValueSeconds(10L));
         builder.setBackoffPolicy(BackoffPolicy.constantBackoff(TimeValue.timeValueSeconds(1L), 3));
         processor = builder.build();
