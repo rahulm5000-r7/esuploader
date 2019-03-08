@@ -101,7 +101,6 @@ public class Uploader {
 
         public void run() {
             for(int assetId = 0; assetId < Settings.ASSET_PER_ORG_COUNT; assetId++) {
-                Map<String, Object> jsonMap = new HashMap<>();
                 String assetIdentifier = "org_id_" + orgId + "_asset_" + assetId;
 
                 for(int policyId = 0; policyId < Settings.POLICY_PER_ASSET_COUNT; policyId++) {
