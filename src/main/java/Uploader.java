@@ -103,11 +103,6 @@ public class Uploader {
             for(int assetId = 0; assetId < Settings.ASSET_PER_ORG_COUNT; assetId++) {
                 Map<String, Object> jsonMap = new HashMap<>();
                 String assetIdentifier = "org_id_" + orgId + "_asset_" + assetId;
-                jsonMap.put("org_id", orgId);
-                jsonMap.put("asset_id", assetIdentifier);
-                jsonMap.put("platform", PLATFORMS.get(random.nextInt(PLATFORMS.size())));
-                IndexRequest request = new IndexRequest("assets_2", "_doc").source(jsonMap);
-                processor.add(request);
 
                 for(int policyId = 0; policyId < Settings.POLICY_PER_ASSET_COUNT; policyId++) {
                     Map<String, Object> policy = new HashMap<>();
@@ -127,7 +122,7 @@ public class Uploader {
                     }
 
                     policy.put("results", results);
-                    IndexRequest policyRequest = new IndexRequest("assets_policies_2", "_doc").source(policy);
+                    IndexRequest policyRequest = new IndexRequest("assets_policies", "_doc").source(policy);
                     processor.add(policyRequest);
                 }
             }
