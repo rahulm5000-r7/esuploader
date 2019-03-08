@@ -106,8 +106,6 @@ public class Uploader {
                 jsonMap.put("org_id", orgId);
                 jsonMap.put("asset_id", assetIdentifier);
                 jsonMap.put("platform", PLATFORMS.get(random.nextInt(PLATFORMS.size())));
-                jsonMap.put("rules_passed", random.nextInt(Settings.RULE_PER_POLICY_COUNT));
-                jsonMap.put("total_rules", random.nextInt(Settings.RULE_PER_POLICY_COUNT));
                 IndexRequest request = new IndexRequest("assets_2", "_doc").source(jsonMap);
                 processor.add(request);
 
@@ -117,6 +115,8 @@ public class Uploader {
                     policy.put("applicable", random.nextBoolean());
                     policy.put("name", "policy " + policyId);
                     policy.put("asset_id", assetIdentifier);
+                    policy.put("org_id", orgId);
+                    policy.put("platform", PLATFORMS.get(random.nextInt(PLATFORMS.size())));
 
                     for(int ruleId = 0; ruleId < Settings.RULE_PER_POLICY_COUNT; ruleId++) {
                         Map<String, Object> ruleResult = new HashMap<>();
