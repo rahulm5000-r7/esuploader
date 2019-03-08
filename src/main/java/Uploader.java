@@ -83,7 +83,7 @@ public class Uploader {
         }
         executor.shutdown();
         while (!executor.isTerminated()) {}
-        boolean terminated = processor.awaitClose(300L, TimeUnit.SECONDS);
+        processor.awaitClose(3L, TimeUnit.DAYS);
         processor.close();
         System.out.println("\nFinished all threads");
         client.close();
