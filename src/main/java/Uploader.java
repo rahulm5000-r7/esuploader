@@ -23,12 +23,12 @@ public class Uploader {
     private static final List<String> RESULTS = Arrays.asList("1", "2", "3");
     private static final Random random = new Random();
 
-    Semaphore concurrentRequests = new Semaphore(200000);
+    Semaphore concurrentRequests = new Semaphore(25000);
     private BulkProcessor processor;
     private RestHighLevelClient client;
 
     public Uploader() {
-        client = new RestHighLevelClient(RestClient.builder(HttpHost.create("<<>>")));
+        client = new RestHighLevelClient(RestClient.builder(HttpHost.create("search-policy-benchmark-vmgu6qtrwgvb4ka6ydohj4kvha.us-east-1.es.amazonaws.com")));
 
         BulkProcessor.Listener listener = new BulkProcessor.Listener() {
             @Override
@@ -58,8 +58,8 @@ public class Uploader {
 
         BiConsumer<BulkRequest, ActionListener<BulkResponse>> bulkConsumer = (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
         BulkProcessor.Builder builder = BulkProcessor.builder(bulkConsumer, listener);
-        builder.setBulkActions(-1);
-        builder.setBulkSize(new ByteSizeValue(20L, ByteSizeUnit.MB));
+        builder.setBulkActions(1000);
+        builder.setBulkSize(new ByteSizeValue(95L, ByteSizeUnit.MB));
         builder.setConcurrentRequests(25);
         builder.setFlushInterval(TimeValue.timeValueSeconds(10L));
         builder.setBackoffPolicy(BackoffPolicy.constantBackoff(TimeValue.timeValueSeconds(1L), 3));
