@@ -28,7 +28,7 @@ public class Uploader {
     private RestHighLevelClient client;
 
     public Uploader() {
-        client = new RestHighLevelClient(RestClient.builder(HttpHost.create("search-policy-benchmark-vmgu6qtrwgvb4ka6ydohj4kvha.us-east-1.es.amazonaws.com")));
+        client = new RestHighLevelClient(RestClient.builder(HttpHost.create("<<>>")));
 
         BulkProcessor.Listener listener = new BulkProcessor.Listener() {
             @Override
