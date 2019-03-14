@@ -23,7 +23,7 @@ public class Uploader {
     private static final List<String> RESULTS = Arrays.asList("1", "2", "3");
     private static final Random random = new Random();
 
-    Semaphore concurrentRequests = new Semaphore(25000);
+    Semaphore concurrentRequests = new Semaphore(165000);
     private BulkProcessor processor;
     private RestHighLevelClient client;
 
@@ -41,7 +41,7 @@ public class Uploader {
             public void afterBulk(long executionId, BulkRequest request,
                 BulkResponse response) {
                 if (response.hasFailures()) {
-                    logger.info("Bulk [{}] executed with failures", executionId);
+                    logger.info("Bulk [{}] executed with failures: " + response.buildFailureMessage(), executionId);
                 } else {
                     logger.info("Bulk [{}] completed in {} milliseconds", executionId, response.getTook().getMillis());
                 }
@@ -58,7 +58,7 @@ public class Uploader {
 
         BiConsumer<BulkRequest, ActionListener<BulkResponse>> bulkConsumer = (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
         BulkProcessor.Builder builder = BulkProcessor.builder(bulkConsumer, listener);
-        builder.setBulkActions(1200);
+        builder.setBulkActions(-1);
         builder.setBulkSize(new ByteSizeValue(95L, ByteSizeUnit.MB));
         builder.setConcurrentRequests(25);
         builder.setFlushInterval(TimeValue.timeValueSeconds(10L));
