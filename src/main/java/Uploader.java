@@ -58,7 +58,7 @@ public class Uploader {
 
         BiConsumer<BulkRequest, ActionListener<BulkResponse>> bulkConsumer = (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
         BulkProcessor.Builder builder = BulkProcessor.builder(bulkConsumer, listener);
-        builder.setBulkActions(1000);
+        builder.setBulkActions(1200);
         builder.setBulkSize(new ByteSizeValue(95L, ByteSizeUnit.MB));
         builder.setConcurrentRequests(25);
         builder.setFlushInterval(TimeValue.timeValueSeconds(10L));
@@ -68,33 +68,36 @@ public class Uploader {
 
     public void start() throws InterruptedException
     {
-        for(int orgId = 0; orgId < Settings.ORG_COUNT; orgId++) {
-            for(int assetId = 0; assetId < Settings.ASSET_PER_ORG_COUNT; assetId++) {
-                String assetIdentifier = "org_id_" + orgId + "_asset_" + assetId;
+        Map<String, Object> policy = new HashMap<>();
+        List<Map<String, Object>> results = new LinkedList<>();
 
-                for(int policyId = 0; policyId < Settings.POLICY_PER_ASSET_COUNT; policyId++) {
-                    concurrentRequests.acquire();
+        for(int x = 0; x < Settings.ORG_COUNT * Settings.ASSET_PER_ORG_COUNT; x++) {
+            int orgId = random.nextInt(Settings.ORG_COUNT);
+            int assetId = random.nextInt(Settings.ASSET_PER_ORG_COUNT);
+            String assetIdentifier = "org_id_" + orgId + "_asset_" + assetId;
 
-                    Map<String, Object> policy = new HashMap<>();
-                    List<Map<String, Object>> results = new LinkedList<>();
-                    policy.put("applicable", random.nextBoolean());
-                    policy.put("name", "policy " + policyId);
-                    policy.put("asset_id", assetIdentifier);
-                    policy.put("org_id", orgId);
-                    policy.put("platform", PLATFORMS.get(random.nextInt(PLATFORMS.size())));
+            for(int policyId = 0; policyId < Settings.POLICY_PER_ASSET_COUNT; policyId++) {
+                concurrentRequests.acquire();
 
-                    for(int ruleId = 0; ruleId < Settings.RULE_PER_POLICY_COUNT; ruleId++) {
-                        Map<String, Object> ruleResult = new HashMap<>();
-                        ruleResult.put("check_name", "rule " + ruleId);
-                        ruleResult.put("proof", "this is proof for rule " + ruleId);
-                        ruleResult.put("result", RESULTS.get(random.nextInt(RESULTS.size())));
-                        results.add(ruleResult);
-                    }
+                policy.clear();
+                results.clear();
+                policy.put("applicable", random.nextBoolean());
+                policy.put("name", "policy " + policyId);
+                policy.put("asset_id", assetIdentifier);
+                policy.put("org_id", orgId);
+                policy.put("platform", PLATFORMS.get(random.nextInt(PLATFORMS.size())));
 
-                    policy.put("results", results);
-                    IndexRequest policyRequest = new IndexRequest("assets_policies", "_doc").source(policy);
-                    processor.add(policyRequest);
+                for(int ruleId = 0; ruleId < Settings.RULE_PER_POLICY_COUNT; ruleId++) {
+                    Map<String, Object> ruleResult = new HashMap<>();
+                    ruleResult.put("check_name", "rule " + ruleId);
+                    ruleResult.put("proof", "this is proof for rule " + ruleId);
+                    ruleResult.put("result", RESULTS.get(random.nextInt(RESULTS.size())));
+                    results.add(ruleResult);
                 }
+
+                policy.put("results", results);
+                IndexRequest policyRequest = new IndexRequest("assets_policies", "_doc").source(policy);
+                processor.add(policyRequest);
             }
         }
     }
