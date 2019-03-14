@@ -23,7 +23,7 @@ public class Uploader {
     private static final List<String> RESULTS = Arrays.asList("1", "2", "3");
     private static final Random random = new Random();
 
-    Semaphore concurrentRequests = new Semaphore(25000);
+    Semaphore concurrentRequests = new Semaphore(50000);
     private BulkProcessor processor;
     private RestHighLevelClient client;
 
@@ -58,7 +58,7 @@ public class Uploader {
 
         BiConsumer<BulkRequest, ActionListener<BulkResponse>> bulkConsumer = (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
         BulkProcessor.Builder builder = BulkProcessor.builder(bulkConsumer, listener);
-        builder.setBulkActions(1000);
+        builder.setBulkActions(1200);
         builder.setBulkSize(new ByteSizeValue(95L, ByteSizeUnit.MB));
         builder.setConcurrentRequests(25);
         builder.setFlushInterval(TimeValue.timeValueSeconds(10L));
